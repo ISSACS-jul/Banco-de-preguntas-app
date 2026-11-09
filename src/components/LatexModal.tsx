@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Quiz } from "../types/quiz";
-import { generateLatexCode, downloadLatexFile } from "../utils/exporters";
+import { generateLatexCode } from "../utils/exporters";
+import { saveFileWithDialog } from "../utils/fileDialog";
 import { X, Copy, Check, Download, FileCode, Eye, EyeOff } from "lucide-react";
 
 interface LatexModalProps {
@@ -33,8 +34,11 @@ export const LatexModal: React.FC<LatexModalProps> = ({
     }
   };
 
-  const handleDownload = () => {
-    downloadLatexFile(quiz, mode);
+  const handleDownload = async () => {
+    const filename = `${quiz.header.title.replace(/[^a-zA-Z0-9_\-]/g, "_") || "evaluacion"}_${
+      mode === "solutions" ? "Solucionario" : "Examen"
+    }.tex`;
+    await saveFileWithDialog(filename, latexCode, "Archivo LaTeX (*.tex)", "tex");
   };
 
   return (

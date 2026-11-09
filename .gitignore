@@ -12,3 +12,8 @@ src-tauri/target/
 # Logs y entornos
 *.log
 .DS_Store
+
+# AppImage y binarios compilados
+*.AppImage
+*.appimage
+Banco-de-Preguntas*

@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { Question } from "../types/quiz";
 import { QuestionCard } from "./QuestionCard";
-import { Search, Filter, X, Layers } from "lucide-react";
+import { Search, Filter, X, Layers, ChevronDown } from "lucide-react";
 
 interface BankPanelProps {
   questions: Question[];
@@ -117,47 +117,74 @@ export const BankPanel: React.FC<BankPanelProps> = ({
           )}
         </div>
 
-        {/* Desplegables de filtros */}
+        {/* Desplegables de filtros con diseño moderno coherente */}
         <div className="grid grid-cols-3 gap-2">
-          <select
-            value={selectedCourse}
-            onChange={(e) => {
-              setSelectedCourse(e.target.value);
-              setSelectedTopic("all");
-            }}
-            className="bg-dark-900 border border-dark-700 text-slate-300 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:border-brand-500"
-          >
-            <option value="all">Todos los Cursos</option>
-            {courses.map((c) => (
-              <option key={c} value={c}>
-                {c}
+          {/* Selector de Cursos */}
+          <div className="relative">
+            <select
+              value={selectedCourse}
+              onChange={(e) => {
+                setSelectedCourse(e.target.value);
+                setSelectedTopic("all");
+              }}
+              style={{ backgroundColor: "#101622", color: "#e2e8f0" }}
+              className="w-full appearance-none bg-dark-850 hover:bg-dark-800 border border-dark-700 hover:border-dark-600 rounded-lg pl-2.5 pr-7 py-1.5 text-xs font-medium focus:outline-none focus:border-brand-500 transition-colors cursor-pointer truncate"
+            >
+              <option value="all" style={{ backgroundColor: "#101622", color: "#e2e8f0" }}>
+                Todos los Cursos
               </option>
-            ))}
-          </select>
+              {courses.map((c) => (
+                <option key={c} value={c} style={{ backgroundColor: "#101622", color: "#e2e8f0" }}>
+                  {c}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
 
-          <select
-            value={selectedTopic}
-            onChange={(e) => setSelectedTopic(e.target.value)}
-            className="bg-dark-900 border border-dark-700 text-slate-300 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:border-brand-500"
-          >
-            <option value="all">Todos los Temas</option>
-            {topics.map((t) => (
-              <option key={t} value={t}>
-                {t}
+          {/* Selector de Temas */}
+          <div className="relative">
+            <select
+              value={selectedTopic}
+              onChange={(e) => setSelectedTopic(e.target.value)}
+              style={{ backgroundColor: "#101622", color: "#e2e8f0" }}
+              className="w-full appearance-none bg-dark-850 hover:bg-dark-800 border border-dark-700 hover:border-dark-600 rounded-lg pl-2.5 pr-7 py-1.5 text-xs font-medium focus:outline-none focus:border-brand-500 transition-colors cursor-pointer truncate"
+            >
+              <option value="all" style={{ backgroundColor: "#101622", color: "#e2e8f0" }}>
+                Todos los Temas
               </option>
-            ))}
-          </select>
+              {topics.map((t) => (
+                <option key={t} value={t} style={{ backgroundColor: "#101622", color: "#e2e8f0" }}>
+                  {t}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
 
-          <select
-            value={selectedDifficulty}
-            onChange={(e) => setSelectedDifficulty(e.target.value)}
-            className="bg-dark-900 border border-dark-700 text-slate-300 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:border-brand-500"
-          >
-            <option value="all">Dificultad</option>
-            <option value="Fácil">Fácil</option>
-            <option value="Media">Media</option>
-            <option value="Difícil">Difícil</option>
-          </select>
+          {/* Selector de Dificultad */}
+          <div className="relative">
+            <select
+              value={selectedDifficulty}
+              onChange={(e) => setSelectedDifficulty(e.target.value)}
+              style={{ backgroundColor: "#101622", color: "#e2e8f0" }}
+              className="w-full appearance-none bg-dark-850 hover:bg-dark-800 border border-dark-700 hover:border-dark-600 rounded-lg pl-2.5 pr-7 py-1.5 text-xs font-medium focus:outline-none focus:border-brand-500 transition-colors cursor-pointer truncate"
+            >
+              <option value="all" style={{ backgroundColor: "#101622", color: "#e2e8f0" }}>
+                Dificultad
+              </option>
+              <option value="Fácil" style={{ backgroundColor: "#101622", color: "#e2e8f0" }}>
+                Fácil
+              </option>
+              <option value="Media" style={{ backgroundColor: "#101622", color: "#e2e8f0" }}>
+                Media
+              </option>
+              <option value="Difícil" style={{ backgroundColor: "#101622", color: "#e2e8f0" }}>
+                Difícil
+              </option>
+            </select>
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
         </div>
 
         {/* Chips de Etiquetas seleccionables */}

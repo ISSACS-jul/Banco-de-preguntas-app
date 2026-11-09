@@ -1,22 +1,19 @@
 import React from "react";
-import { BookOpen, Plus, Download, Upload, HelpCircle } from "lucide-react";
-import { Question } from "../types/quiz";
+import { BookOpen, Plus, Download, Upload } from "lucide-react";
 
 interface HeaderProps {
   totalQuestions: number;
   onOpenNewModal: () => void;
   onExportBank: () => void;
-  onImportBank: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onOpenImportModal: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   totalQuestions,
   onOpenNewModal,
   onExportBank,
-  onImportBank,
+  onOpenImportModal,
 }) => {
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-
   return (
     <header className="h-14 bg-dark-850 border-b border-dark-700 px-4 flex items-center justify-between select-none z-10 shrink-0">
       {/* Logo y título */}
@@ -39,28 +36,21 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Botones de acción principales */}
       <div className="flex items-center space-x-2">
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={onImportBank}
-          accept=".json"
-          className="hidden"
-        />
         <button
-          onClick={() => fileInputRef.current?.click()}
-          title="Importar banco desde archivo JSON"
-          className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-dark-800 hover:bg-dark-700 border border-dark-700 rounded-md transition-colors"
+          onClick={onOpenImportModal}
+          title="Importar banco desde archivo o pegando texto JSON"
+          className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-dark-800 hover:bg-dark-750 border border-dark-700 rounded-lg transition-colors shadow-sm"
         >
-          <Upload className="w-3.5 h-3.5" />
+          <Upload className="w-3.5 h-3.5 text-brand-400" />
           <span>Importar Banco</span>
         </button>
 
         <button
           onClick={onExportBank}
           title="Exportar respaldo completo del banco a JSON"
-          className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-dark-800 hover:bg-dark-700 border border-dark-700 rounded-md transition-colors"
+          className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-dark-800 hover:bg-dark-750 border border-dark-700 rounded-lg transition-colors shadow-sm"
         >
-          <Download className="w-3.5 h-3.5" />
+          <Download className="w-3.5 h-3.5 text-emerald-400" />
           <span>Respaldar Banco</span>
         </button>
 
@@ -68,7 +58,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         <button
           onClick={onOpenNewModal}
-          className="flex items-center space-x-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-500 rounded-md shadow-sm transition-all hover:shadow-brand-500/20 active:scale-95"
+          className="flex items-center space-x-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-500 rounded-lg shadow-sm transition-all hover:shadow-brand-500/20 active:scale-95"
         >
           <Plus className="w-4 h-4" />
           <span>Nueva Pregunta</span>

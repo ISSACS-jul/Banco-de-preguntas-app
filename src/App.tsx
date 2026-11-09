@@ -6,6 +6,8 @@ import { BankPanel } from "./components/BankPanel";
 import { QuizPanel } from "./components/QuizPanel";
 import { QuestionModal } from "./components/QuestionModal";
 import { LatexModal } from "./components/LatexModal";
+import { BackupModal } from "./components/BackupModal";
+import { ImportModal } from "./components/ImportModal";
 import { exportToWord, exportToPdf } from "./utils/exporters";
 import { saveAs } from "file-saver";
 
@@ -60,6 +62,8 @@ export function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [isLatexModalOpen, setIsLatexModalOpen] = useState(false);
+  const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   // 4. Ancho del panel izquierdo (split screen redimensionable)
   const [leftWidthPercent, setLeftWidthPercent] = useState<number>(48);
@@ -208,26 +212,18 @@ export function App() {
     saveAs(blob, filename);
   };
 
-  const handleImportBank = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const parsed = JSON.parse(event.target?.result as string);
-        if (Array.isArray(parsed)) {
-          setQuestions(parsed);
-          alert(`¡Banco cargado exitosamente con ${parsed.length} preguntas!`);
-        } else {
-          alert("El archivo no tiene el formato esperado de banco de preguntas.");
-        }
-      } catch (err) {
-        alert("Error al leer el archivo JSON.");
-      }
-    };
-    reader.readAsText(file);
-    e.target.value = "";
+  // Respaldo e Importación de Banco
+  const handleImportQuestions = (imported: Question[], mode: "append" | "replace") => {
+    if (mode === "replace") {
+      setQuestions(imported);
+    } else {
+      // Agregar sin duplicar por ID
+      setQuestions((prev) => {
+        const existingIds = new Set(prev.map((q) => q.id));
+        const newOnes = imported.filter((q) => !existingIds.has(q.id));
+        return [...prev, ...newOnes];
+      });
+    }
   };
 
   const quizQuestionIds = new Set(quiz.items.map((it) => it.question.id));
@@ -241,8 +237,8 @@ export function App() {
           setEditingQuestion(null);
           setIsModalOpen(true);
         }}
-        onExportBank={handleExportBank}
-        onImportBank={handleImportBank}
+        onExportBank={() => setIsBackupModalOpen(true)}
+        onOpenImportModal={() => setIsImportModalOpen(true)}
       />
 
       {/* Pantalla Dividida en Vertical (Split Screen) */}
@@ -311,6 +307,20 @@ export function App() {
         isOpen={isLatexModalOpen}
         onClose={() => setIsLatexModalOpen(false)}
         quiz={quiz}
+      />
+
+      {/* Modal para Respaldar el Banco (Descargar o Copiar JSON) */}
+      <BackupModal
+        isOpen={isBackupModalOpen}
+        onClose={() => setIsBackupModalOpen(false)}
+        questions={questions}
+      />
+
+      {/* Modal para Importar el Banco (Archivo o Texto JSON) */}
+      <ImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onImport={handleImportQuestions}
       />
     </div>
   );
