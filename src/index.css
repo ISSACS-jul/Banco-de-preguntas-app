@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilos de KaTeX y scrollbar oscuro */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0b0f17;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1f2b3e;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2d3d56;
+}
+
+.katex {
+  font-size: 1.05em;
+  color: #93c5fd; /* Azul suave para que las fórmulas resalten en modo oscuro */
+}
+
+.katex-display-wrapper .katex {
+  color: #bfdbfe;
+}
+
+/* ==============================================================
+   ESTILOS DE IMPRESIÓN Y EXPORTACIÓN A PDF (@media print)
+   Reproduce la plantilla formal institucional al imprimir
+   ============================================================== */
+@media print {
+  /* Ocultar elementos de interfaz y panel izquierdo */
+  header,
+  .w-1\.5,
+  div[style*="width: 48%"],
+  button,
+  .border-b.border-dark-750,
+  .p-3.bg-dark-850 {
+    display: none !important;
+  }
+
+  body,
+  #root,
+  .bg-dark-900,
+  .bg-dark-850 {
+    background: #ffffff !important;
+    color: #1a202c !important;
+    overflow: visible !important;
+    height: auto !important;
+    width: 100% !important;
+  }
+
+  div[style*="width: 52%"] {
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .print-container {
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+  }
+
+  .katex {
+    color: #000000 !important;
+  }
+
+  /* Banda superior en impresión */
+  .bg-\[\#1F3A5F\] {
+    background-color: #1F3A5F !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .bg-\[\#B08D57\] {
+    background-color: #B08D57 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .text-\[\#1F3A5F\] {
+    color: #1F3A5F !important;
+  }
+
+  /* Cajas en papel */
+  .bg-dark-850,
+  .bg-dark-900 {
+    background: transparent !important;
+    border-color: #cbd5e1 !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+  }
+
+  .text-slate-100,
+  .text-slate-200,
+  .text-slate-300,
+  .text-slate-400 {
+    color: #1e293b !important;
+  }
+
+  .border-dark-700,
+  .border-dark-750 {
+    border-color: #cbd5e1 !important;
+  }
+
+  /* Burbujas de hoja de respuestas */
+  .border-\[\#1F3A5F\] {
+    border-color: #1F3A5F !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+
+  /* Cuadro de respuesta abierta */
+  .border-l-\[\#B08D57\] {
+    border-left-color: #B08D57 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Evitar cortes indeseados en medio de una pregunta al imprimir */
+  .group.relative {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: 1.5rem !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+}

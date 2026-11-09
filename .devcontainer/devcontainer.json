@@ -1,0 +1,23 @@
+{
+  "name": "Banco de Preguntas - Entorno Seguro Tauri",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "devcontainer",
+  "workspaceFolder": "/workspace",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "rust-analyzer.check.command": "clippy"
+      },
+      "extensions": [
+        "rust-lang.rust-analyzer",
+        "tamasfe.even-better-toml",
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode",
+        "tauri-apps.tauri-vscode"
+      ]
+    }
+  },
+  "remoteUser": "vscode",
+  "forwardPorts": [1420, 5173]
+}

@@ -1,0 +1,24 @@
+services:
+  devcontainer:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      # Monta la carpeta actual en el contenedor de forma segura
+      - .:/workspace:cached
+      # Preserva el caché de cargo/rust entre reinicios
+      - cargo-cache:/usr/local/cargo/registry
+      # Compartir servidor gráfico X11 para ver la ventana nativa de Tauri (opcional)
+      - /tmp/.X11-unix:/tmp/.X11-unix:ro
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
+    ports:
+      # Puerto para el servidor de desarrollo Vite/Tauri
+      - "1420:1420"
+      - "5173:5173"
+    stdin_open: true
+    tty: true
+    command: sleep infinity
+
+volumes:
+  cargo-cache:
