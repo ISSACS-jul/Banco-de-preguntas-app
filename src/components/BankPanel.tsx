@@ -23,6 +23,8 @@ export const BankPanel: React.FC<BankPanelProps> = ({
   const [selectedTopic, setSelectedTopic] = useState("all");
   const [selectedDifficulty, setSelectedDifficulty] = useState("all");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [pageSize, setPageSize] = useState<number>(() => Math.min(50, questions.length));
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Listas únicas de cursos y temas para los filtros
   const courses = useMemo(() => {
@@ -79,6 +81,15 @@ export const BankPanel: React.FC<BankPanelProps> = ({
     });
   }, [questions, searchTerm, selectedCourse, selectedTopic, selectedDifficulty, selectedTags]);
 
+  // Aplicar paginación después del filtrado
+  const pagedQuestions = useMemo(() => {
+    const total = questions.length;
+    const page = pageSize >= total ? total : pageSize;
+    const start = (currentPage - 1) * page;
+    const end = start + page;
+    return filteredQuestions.slice(start, end);
+  }, [filteredQuestions, currentPage, pageSize, questions.length]);
+
   const clearFilters = () => {
     setSearchTerm("");
     setSelectedCourse("all");
@@ -92,7 +103,8 @@ export const BankPanel: React.FC<BankPanelProps> = ({
     selectedCourse !== "all" ||
     selectedTopic !== "all" ||
     selectedDifficulty !== "all" ||
-    selectedTags.length > 0;
+    selectedTags.length > 0 ||
+    pageSize < questions.length;
 
   return (
     <div className="h-full flex flex-col bg-dark-900 border-r border-dark-750 overflow-hidden">
@@ -187,6 +199,37 @@ export const BankPanel: React.FC<BankPanelProps> = ({
           </div>
         </div>
 
+        {/* Selector de Tamaño de Página */}
+        <div className="relative">
+          <select
+            value={pageSize}
+            onChange={(e) => {
+              let newSize = parseInt(e.target.value, 10);
+              if (e.target.value === "all") {
+                newSize = questions.length;
+              }
+              setPageSize(newSize);
+              setCurrentPage(1);
+            }}
+            style={{ backgroundColor: "#101622", color: "#e2e8f0" }}
+            className="w-full appearance-none bg-dark-850 hover:bg-dark-800 border border-dark-700 hover:border-dark-600 rounded-lg pl-2.5 pr-7 py-1.5 text-xs font-medium focus:outline-none focus:border-brand-500 transition-colors cursor-pointer truncate"
+          >
+            <option value={50} style={{ backgroundColor: "#101622", color: "#e2e8f0" }}>
+              50 preguntas
+            </option>
+            <option value={25} style={{ backgroundColor: "#101622", color: "#e2e8f0" }}>
+              25 preguntas
+            </option>
+            <option value={100} style={{ backgroundColor: "#101622", color: "#e2e8f0" }}>
+              100 preguntas
+            </option>
+            <option value={all} style={{ backgroundColor: "#101622", color: "#e2e8f0" }}>
+              Todas
+            </option>
+          </select>
+          <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+        </div>
+
         {/* Chips de Etiquetas seleccionables */}
         {allTags.length > 0 && (
           <div className="flex flex-wrap items-center gap-1 max-h-16 overflow-y-auto pt-1">
@@ -215,8 +258,12 @@ export const BankPanel: React.FC<BankPanelProps> = ({
         {/* Contador y botón de limpiar */}
         <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
           <span>
-            Mostrando <strong>{filteredQuestions.length}</strong> de{" "}
-            <strong>{questions.length}</strong> preguntas
+            Mostrando <strong>{pagedQuestions.length}</strong> de{" "}
+            <strong>{filteredQuestions.length}</strong> preguntas{questions.length > pageSize && (
+              <>
+                {currentPage} de {Math.ceil(filteredQuestions.length / pageSize)}
+              </>
+            )}
           </span>
           {hasActiveFilters && (
             <button
@@ -225,6 +272,36 @@ export const BankPanel: React.FC<BankPanelProps> = ({
             >
               <X className="w-3 h-3" /> Limpiar filtros
             </button>
+          )}
+
+          {/* Navegación de Páginas */}
+          {questions.length > pageSize && (
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-2 py-1 text-xs text-slate-300 bg-dark-800 border border-dark-700 rounded hover:bg-dark-750"
+                title="Página anterior"
+              >
+                ← Anterior
+              </button>
+              <span className="text-xs text-slate-400">
+                Página {currentPage}{" "}
+                {questions.length > pageSize && (
+                  <strong>
+                    de {Math.ceil(filteredQuestions.length / pageSize)}
+                  </strong>
+                )}
+              </span>
+              <button
+                onClick={() => setCurrentPage((p) => p + 1)}
+                disabled={currentPage >= Math.ceil(filteredQuestions.length / pageSize) || filteredQuestions.length === 0}
+                className="px-2 py-1 text-xs text-slate-300 bg-dark-800 border border-dark-700 rounded hover:bg-dark-750"
+                title="Siguiente página"
+              >
+                Siguiente →
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -240,7 +317,7 @@ export const BankPanel: React.FC<BankPanelProps> = ({
             </p>
           </div>
         ) : (
-          filteredQuestions.map((q) => (
+          pagedQuestions.map((q) => (
             <QuestionCard
               key={q.id}
               question={q}

@@ -1,5 +1,5 @@
-import React from "react";
-import { BookOpen, Plus, Download, Upload } from "lucide-react";
+import React, { useState } from "react";
+import { BookOpen, Plus, Download, Upload, Settings } from "lucide-react";
 
 interface HeaderProps {
   totalQuestions: number;
@@ -13,7 +13,12 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenNewModal,
   onExportBank,
   onOpenImportModal,
+  showSettings,
+  setShowSettings,
 }) => {
+  const [showSettings, setShowSettings] = useState(false);
+  const [fontSize, setFontSize] = useState("medium");
+
   return (
     <header className="h-14 bg-dark-850 border-b border-dark-700 px-4 flex items-center justify-between select-none z-10 shrink-0">
       {/* Logo y título */}
@@ -46,6 +51,17 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
 
         <button
+          onClick={() => setShowSettings(!showSettings)}
+          title="Abrir configuración"
+          className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-dark-800 hover:bg-dark-750 border border-dark-700 rounded-lg transition-colors shadow-sm"
+        >
+          <Settings className="w-3.5 h-3.5" />
+          <span>Configuración</span>
+        </button>
+
+        <div className="h-4 w-[1px] bg-dark-700 mx-1" />
+
+        <button
           onClick={onExportBank}
           title="Exportar respaldo completo del banco a JSON"
           className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-dark-800 hover:bg-dark-750 border border-dark-700 rounded-lg transition-colors shadow-sm"
@@ -53,8 +69,6 @@ export const Header: React.FC<HeaderProps> = ({
           <Download className="w-3.5 h-3.5 text-emerald-400" />
           <span>Respaldar Banco</span>
         </button>
-
-        <div className="h-4 w-[1px] bg-dark-700 mx-1" />
 
         <button
           onClick={onOpenNewModal}

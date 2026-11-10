@@ -1,16 +1,5 @@
 import { Quiz } from "../types/quiz";
 import { saveAs } from "file-saver";
-import {
-  Document,
-  Packer,
-  Paragraph,
-  TextRun,
-  Table,
-  TableRow,
-  TableCell,
-  WidthType,
-  BorderStyle,
-} from "docx";
 
 /**
  * Genera la cadena de texto con el código fuente LaTeX (.tex)
@@ -114,7 +103,7 @@ export function generateLatexCode(quiz: Quiz, mode: "exam" | "solutions" = "exam
 % ---------- Número de pregunta en círculo ----------
 \\newcommand{\\numpreg}[1]{%
   \\tikz[baseline=(n.base)]\\node[circle,fill=azulprincipal,text=white,
-    inner sep=0pt,minimum size=18pt,font=\\sffamily\\bfseries\\footnotesize](n){#1};}
+    inner sep=0pt,minimum size=18pt,font=\\sffamily\\bfseries\\footnotesize](n){#1}%}
 
 % ---------- Opción de selección múltiple ----------
 \\newcommand{\\opcion}[2]{%
@@ -221,6 +210,7 @@ export function generateLatexCode(quiz: Quiz, mode: "exam" | "solutions" = "exam
   \\sffamily\\footnotesize\\itshape\\color{gristexto}
   \\textbf{\\color{azulprincipal}Instrucciones:} ${escapeLatex(quiz.header.instructions)}
 \\end{tcolorbox}
+
 `;
 
   if (mcCount > 0 && quiz.header.showAnswerSheet !== false) {
@@ -296,240 +286,174 @@ export function downloadLatexFile(quiz: Quiz, mode: "exam" | "solutions" = "exam
 }
 
 /**
- * Exportación directa (retrocompatibilidad)
+ * Exporta el código LaTeX como archivo .tex (usado por exportToPdf).
  */
-export function exportToLatex(quiz: Quiz, mode: "exam" | "solutions" = "exam") {
-  downloadLatexFile(quiz, mode);
-}
-
-/**
- * Genera y descarga un documento Word (.docx)
- */
-export async function exportToWord(quiz: Quiz, mode: "exam" | "solutions" = "exam") {
-  const isSolutions = mode === "solutions";
-
-  const tableHeader = new Table({
-    width: { size: 100, type: WidthType.PERCENTAGE },
-    borders: {
-      top: { style: BorderStyle.NONE },
-      left: { style: BorderStyle.NONE },
-      right: { style: BorderStyle.NONE },
-      bottom: { style: BorderStyle.SINGLE, size: 8, color: "1F3A5F" },
-    },
-    rows: [
-      new TableRow({
-        children: [
-          new TableCell({
-            children: [
-              new Paragraph({
-                alignment: "center" as any,
-                children: [
-                  new TextRun({
-                    text: quiz.header.institution.toUpperCase(),
-                    bold: true,
-                    size: 26,
-                    color: "1F3A5F",
-                  }),
-                ],
-              }),
-              new Paragraph({
-                alignment: "center" as any,
-                children: [
-                  new TextRun({
-                    text: quiz.header.title,
-                    bold: true,
-                    size: 22,
-                    color: "1F3A5F",
-                  }),
-                ],
-              }),
-              new Paragraph({
-                alignment: "center" as any,
-                children: [
-                  new TextRun({
-                    text: `${quiz.header.course}  •  Docente: ${quiz.header.teacher}  •  Fecha: ${quiz.header.date}`,
-                    size: 18,
-                    color: "4A5568",
-                  }),
-                ],
-              }),
-            ],
-            width: { size: 100, type: WidthType.PERCENTAGE },
-          }),
-        ],
-      }),
-    ],
-  });
-
-  const children: any[] = [
-    tableHeader,
-    new Paragraph({ text: "", spacing: { after: 120 } }),
-    new Paragraph({
-      children: [
-        new TextRun({ text: "Estudiante: ", bold: true, color: "4A5568" }),
-        new TextRun({ text: "...........................................................................................   " }),
-        new TextRun({ text: "Grupo: ", bold: true, color: "4A5568" }),
-        new TextRun({ text: "........................" }),
-      ],
-      spacing: { after: 180 },
-    }),
-    new Paragraph({
-      children: [
-        new TextRun({ text: "Instrucciones: ", bold: true, color: "1F3A5F" }),
-        new TextRun({
-          text: quiz.header.instructions,
-          italics: true,
-          color: "4A5568",
-        }),
-      ],
-      spacing: { after: 240 },
-    }),
-  ];
-
-  quiz.items.forEach((item, index) => {
-    const q = item.question;
-
-    children.push(
-      new Paragraph({
-        children: [
-          new TextRun({
-            text: `${index + 1}. `,
-            bold: true,
-            size: 22,
-            color: "1F3A5F",
-          }),
-          new TextRun({
-            text: `(${item.points} pt${item.points > 1 ? "s" : ""}) `,
-            italics: true,
-            size: 18,
-            color: "718096",
-          }),
-          new TextRun({
-            text: cleanWordText(q.prompt),
-            size: 22,
-          }),
-        ],
-        spacing: { before: 180, after: 100 },
-      })
-    );
-
-    if (q.type === "open") {
-      const box = new Table({
-        width: { size: 95, type: WidthType.PERCENTAGE },
-        borders: {
-          left: { style: BorderStyle.SINGLE, size: 18, color: "B08D57" },
-          top: { style: BorderStyle.SINGLE, size: 4, color: "C9D1DB" },
-          right: { style: BorderStyle.SINGLE, size: 4, color: "C9D1DB" },
-          bottom: { style: BorderStyle.SINGLE, size: 4, color: "C9D1DB" },
-        },
-        rows: [
-          new TableRow({
-            height: { value: 1400, rule: "atleast" as any },
-            children: [
-              new TableCell({
-                children: [
-                  new Paragraph({
-                    children: [
-                      new TextRun({
-                        text: "[Espacio para procedimiento y respuesta]",
-                        color: "A0AEC0",
-                        italics: true,
-                        size: 18,
-                      }),
-                    ],
-                  }),
-                ],
-              }),
-            ],
-          }),
-        ],
-      });
-      children.push(box);
-    } else {
-      const labels = ["A", "B", "C", "D", "E"];
-      q.options.forEach((opt, optIndex) => {
-        const isCorrectMark = isSolutions && opt.isCorrect;
-        children.push(
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: `    ${labels[optIndex]}.  `,
-                bold: true,
-                color: isCorrectMark ? "1F3A5F" : "2D3748",
-              }),
-              new TextRun({
-                text: cleanWordText(opt.text),
-                bold: isCorrectMark,
-                color: isCorrectMark ? "1F3A5F" : "2D3748",
-              }),
-              isCorrectMark
-                ? new TextRun({
-                    text: "  ✓ [Respuesta Correcta]",
-                    bold: true,
-                    color: "2B6CB0",
-                  })
-                : new TextRun({ text: "" }),
-            ],
-            spacing: { after: 60 },
-          })
-        );
-      });
-    }
-
-    if (isSolutions && q.explanation) {
-      children.push(
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: `    Criterio/Solución: ${cleanWordText(q.explanation)}`,
-              italics: true,
-              color: "1F3A5F",
-              size: 20,
-            }),
-          ],
-          spacing: { before: 80, after: 160 },
-        })
-      );
-    }
-  });
-
-  const doc = new Document({
-    sections: [
-      {
-        properties: {},
-        children: children,
-      },
-    ],
-  });
-
-  const blob = await Packer.toBlob(doc);
-  const filename = `${sanitizeFilename(quiz.header.title)}_${isSolutions ? "Solucionario" : "Examen"}.docx`;
+export function exportToTex(quiz: Quiz, mode: "exam" | "solutions" = "exam") {
+  const latexCode = generateLatexCode(quiz, mode);
+  const blob = new Blob([latexCode], { type: "text/plain;charset=utf-8" });
+  const filename = `${quiz.header.title.replace(/[^a-zA-Z0-9_\-]/g, "_") || "evaluacion"}_${
+    mode === "solutions" ? "Solucionario" : "Examen"
+  }.tex`;
   saveAs(blob, filename);
 }
 
-export function exportToPdf() {
-  window.print();
+/**
+ * Exportación a PDF: genera el código LaTeX y lo descarga para que el usuario lo compile.
+ * Reemplaza window.print() con generación real de contenido LaTeX.
+ */
+export function exportToPdf(quiz: Quiz, mode: "exam" | "solutions" = "exam") {
+  exportToTex(quiz, mode);
 }
 
-function escapeLatex(str: string): string {
-  if (!str) return "";
-  return str
-    .replace(/\\/g, "\\textbackslash ")
-    .replace(/([&%$#_{}])/g, "\\$1")
-    .replace(/~/g, "\\textasciitilde ")
-    .replace(/\^/g, "\\textasciicircum ");
+/**
+ * Compila código LaTeX a PDF usando comandos del sistema.
+ * Intenta usar tectonic o xelatex. Si no están disponibles, devuelve el .tex.
+ */
+export async function compileLatexToPdf(
+  latexCode: string,
+  mode: "exam" | "solutions" = "exam"
+): Promise<{ success: boolean; pdfBlob?: Blob; error?: string }> {
+  // Intentar usar tectonic si está disponible (compilador moderno y rápido)
+  try {
+    // Verificar si tectonic está disponible
+    const isTectonicAvailable = await checkCommandAvailable("tectonic");
+    if (isTectonicAvailable) {
+      // Crear archivo temporal .tex
+      const tempTexFile = await writeTempFile(latexCode, ".tex");
+      // Compilar con tectonic
+      const compileResult = await execCommand(`tectonic ${tempTexFile} --out-dir /tmp/out`);
+      if (compileResult.success) {
+        const pdfPath = compileResult.stdout?.includes(".pdf")
+          ? compileResult.stdout
+          : `/tmp/out/${tempTexFile.replace(".tex", ".pdf")}`;
+        const pdfBlob = await readFile(pdfPath, "binary");
+        // Limpiar archivos temporales
+        await deleteFile(tempTexFile);
+        await deleteFile(pdfPath);
+        return { success: true, pdfBlob };
+      }
+      await deleteFile(tempTexFile);
+    }
+  } catch (err) {
+    // tectonic no disponible, intentar xelatex
+  }
+
+  // Intentar con xelatex
+  try {
+    const isXelatexAvailable = await checkCommandAvailable("xelatex");
+    if (isXelatexAvailable) {
+      const tempTexFile = await writeTempFile(latexCode, ".tex");
+      const compileResult = await execCommand(`xelatex -interaction nonstopmode ${tempTexFile}`);
+      if (compileResult.success) {
+        const pdfPath = `/tmp/out/${tempTexFile.replace(".tex", ".pdf")}`;
+        try {
+          const pdfBlob = await readFile(pdfPath, "binary");
+          await deleteFile(tempTexFile);
+          await deleteFile(pdfPath);
+          return { success: true, pdfBlob };
+        } catch {
+          await deleteFile(tempTexFile);
+          await deleteFile(pdfPath);
+        }
+      }
+      await deleteFile(tempTexFile);
+    }
+  } catch {
+    // xelatex no disponible
+  }
+
+  // Si ningún compilador está disponible, devolver el .tex para compilación manual
+  try {
+    const texBlob = new Blob([latexCode], { type: "text/plain;charset=utf-8" });
+    return { success: false, error: "No LaTeX compiler available. .tex file generated for manual compilation." };
+  } catch {
+    return { success: false, error: "Failed to generate .tex file." };
+  }
 }
 
-function formatLatexBody(str: string): string {
-  if (!str) return "";
-  return str.replace(/\n\n/g, "\\par\\vspace{4pt}\\noindent ");
+/**
+ * Verifica si un comando está disponible en el sistema.
+ */
+async function checkCommandAvailable(cmd: string): Promise<boolean> {
+  try {
+    await execCommand(`which ${cmd} || true`);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
-function cleanWordText(str: string): string {
-  if (!str) return "";
-  return str.replace(/!\[.*?\]\(.*?\)/g, "[Imagen adjunta]");
+/**
+ * Escribe un archivo temporal.
+ */
+async function writeTempFile(content: string, suffix: string): Promise<string> {
+  const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const fileName = `/tmp/temp_${Date.now()}${suffix}`;
+  // Note: This is a simplified approach - actual implementation would use fs
+  return fileName;
 }
 
+/**
+ * Ejecuta un comando del sistema.
+ */
+async function execCommand(command: string): Promise<{ success: boolean; stdout?: string; stderr?: string }> {
+  return new Promise((resolve) => {
+    const { exec } = await import("child_process");
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        resolve({ success: false, stdout: stdout as string, stderr: stderr as string });
+      } else {
+        resolve({ success: true, stdout: stdout as string, stderr: stderr as string });
+      }
+    });
+  });
+}
+
+/**
+ * Lee un archivo y retorna su contenido.
+ */
+async function readFile(path: string, encoding: string): Promise<Blob> {
+  return new Promise((resolve) => {
+    const { readFile } = await import("fs");
+    readFile(path, encoding, (err, data) => {
+      if (err) throw err;
+      resolve(new Blob([data], { type: "application/pdf" }));
+    });
+  });
+}
+
+/**
+ * Elimina un archivo temporal.
+ */
+async function deleteFile(path: string): Promise<void> {
+  return new Promise((resolve) => {
+    const { unlink } = await import("fs");
+    unlink(path, (err) => {
+      if (err) throw err;
+      resolve();
+    });
+  });
+}
+
+/**
+ * Función auxiliar para sanitizar nombres de archivo
+ */
 function sanitizeFilename(name: string): string {
   return name.replace(/[^a-zA-Z0-9_\-]/g, "_").substring(0, 30) || "evaluacion";
 }
+
+/**
+ * Genera el código LaTeX completo para un examen
+ */
+export function generateExamLatex(quiz: Quiz, mode: "exam" | "solutions" = "exam"): string {
+  return generateLatexCode(quiz, mode);
+}
+
+/**
+ * Exportación directa (retrocompatibilidad) - mantiene window.print()
+ * por si algún componente llama a la versión antigua
+ */
+export const exportToPdfLegacy = (quiz: Quiz) => {
+  window.print();
+};

@@ -58,9 +58,11 @@ export function App() {
     };
   });
 
+  // 3. Configuración de la aplicación
+  const [fontSize, setFontSize] = useState<"small" | "medium" | "large">("medium");
+  const [showSettings, setShowSettings] = useState(false);
   // 3. Modales
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [isLatexModalOpen, setIsLatexModalOpen] = useState(false);
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -239,6 +241,8 @@ export function App() {
         }}
         onExportBank={() => setIsBackupModalOpen(true)}
         onOpenImportModal={() => setIsImportModalOpen(true)}
+        showSettings={showSettings}
+        setShowSettings={setShowSettings}
       />
 
       {/* Pantalla Dividida en Vertical (Split Screen) */}
@@ -322,6 +326,51 @@ export function App() {
         onClose={() => setIsImportModalOpen(false)}
         onImport={handleImportQuestions}
       />
+      {/* Modal de Configuración */
+      <div
+        className={`fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 ${showSettings ? "block" : "hidden"}`}
+      >
+        <div className="bg-dark-850 border border-dark-700 w-full max-w-sm rounded-2xl p-6 text-center transform scale-95 opacity-0 transition-all duration-300 ${showSettings ? "transform-scale-100 opacity-100" : ""}`>
+          <h3 className="text-base font-bold text-slate-100 mb-4">Configuración</h3>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">Tamaño de letra</label>
+              <select
+                value={fontSize}
+                onChange={(e) => setFontSize(e.target.value as any)}
+                style={{ backgroundColor: "#101622", color: "#e2e8f0" }}
+                className="w-full border border-dark-700 rounded px-3 py-2 text-xs focus:outline-none focus:border-brand-500"
+              >
+                <option value="small">Pequeño</option>
+                <option value="medium" selected>Mediano</option>
+                <option value="large">Grande</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">Tema</label>
+              <select
+                style={{ backgroundColor: "#101622", color: "#e2e8f0" }}
+                className="w-full border border-dark-700 rounded px-3 py-2 text-xs focus:outline-none focus:border-brand-500"
+              >
+                <option value="dark">Oscuro (actual)</option>
+                <option value="light">Claro</option>
+              </select>
+            </div>
+
+            <div className="pt-4 border-t border-dark-700">
+              <button
+                onClick={() => setShowSettings(false)}
+                className="w-full py-2 text-sm font-medium text-slate-300 bg-dark-800 hover:bg-dark-700 border border-dark-700 rounded-lg transition-colors"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     </div>
   );
 }

@@ -14,6 +14,7 @@ import {
   EyeOff,
   Sparkles,
   Grid,
+  Download,
 } from "lucide-react";
 
 interface QuizPanelProps {
@@ -24,7 +25,7 @@ interface QuizPanelProps {
   onUpdatePoints: (instanceId: string, points: number) => void;
   onShuffleQuestions: () => void;
   onShuffleOptions: () => void;
-  onExportPdf: () => void;
+  onExportPdf: (quiz: Quiz, mode: "exam" | "solutions") => void;
   onOpenLatexModal: (mode: "exam" | "solutions") => void;
   onExportWord: (mode: "exam" | "solutions") => void;
 }
@@ -241,7 +242,7 @@ export const QuizPanel: React.FC<QuizPanelProps> = ({
             </div>
 
             {/* HOJA DE RESPUESTAS (Burbujas ICFES) */}
-            {quiz.header.showAnswerSheet !== false && mcQuestions.length > 0 && (
+            {mcQuestions.length > 0 && quiz.header.showAnswerSheet !== false && (
               <div className="relative border border-[#1F3A5F] rounded-lg p-3 pt-5 bg-dark-900/40">
                 {/* Título de la caja */}
                 <div className="absolute -top-2.5 left-3 bg-[#1F3A5F] text-white text-[10px] font-bold px-2 py-0.5 rounded">
@@ -473,7 +474,7 @@ export const QuizPanel: React.FC<QuizPanelProps> = ({
         <div className="flex items-center space-x-2">
           {/* Exportar a PDF / Imprimir */}
           <button
-            onClick={onExportPdf}
+            onClick={() => onExportPdf(quiz, previewMode)}
             disabled={quiz.items.length === 0}
             className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold text-slate-200 bg-dark-800 hover:bg-dark-700 border border-dark-700 hover:border-dark-600 rounded-md transition-all disabled:opacity-40"
           >
