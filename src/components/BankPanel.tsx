@@ -223,7 +223,7 @@ export const BankPanel: React.FC<BankPanelProps> = ({
             <option value={100} style={{ backgroundColor: "#101622", color: "#e2e8f0" }}>
               100 preguntas
             </option>
-            <option value={all} style={{ backgroundColor: "#101622", color: "#e2e8f0" }}>
+            <option value="all" style={{ backgroundColor: "#101622", color: "#e2e8f0" }}>
               Todas
             </option>
           </select>

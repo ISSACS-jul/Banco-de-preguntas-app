@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { BookOpen, Plus, Download, Upload, Settings } from "lucide-react";
 
 interface HeaderProps {
@@ -6,6 +6,8 @@ interface HeaderProps {
   onOpenNewModal: () => void;
   onExportBank: () => void;
   onOpenImportModal: () => void;
+  showSettings: boolean;
+  setShowSettings: (v: boolean) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -16,8 +18,6 @@ export const Header: React.FC<HeaderProps> = ({
   showSettings,
   setShowSettings,
 }) => {
-  const [showSettings, setShowSettings] = useState(false);
-  const [fontSize, setFontSize] = useState("medium");
 
   return (
     <header className="h-14 bg-dark-850 border-b border-dark-700 px-4 flex items-center justify-between select-none z-10 shrink-0">

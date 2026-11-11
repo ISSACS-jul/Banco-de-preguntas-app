@@ -61,6 +61,8 @@ export function App() {
   // 3. Configuración de la aplicación
   const [fontSize, setFontSize] = useState<"small" | "medium" | "large">("medium");
   const [showSettings, setShowSettings] = useState(false);
+  // Pregunta en edición (para el modal de crear/editar)
+  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   // 3. Modales
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLatexModalOpen, setIsLatexModalOpen] = useState(false);
@@ -87,6 +89,13 @@ export function App() {
       console.error("Error guardando quiz en localStorage", e);
     }
   }, [quiz]);
+
+  // Aplica el tamaño de letra elegido al elemento raíz (afecta a todas las
+  // clases text-* de Tailwind, que usan unidades rem relativas al html)
+  useEffect(() => {
+    const scale = { small: "14px", medium: "16px", large: "20px" }[fontSize];
+    document.documentElement.style.fontSize = scale;
+  }, [fontSize]);
 
   // Manejo del redimensionamiento de pantalla dividida
   useEffect(() => {
@@ -326,11 +335,11 @@ export function App() {
         onClose={() => setIsImportModalOpen(false)}
         onImport={handleImportQuestions}
       />
-      {/* Modal de Configuración */
+      {/* Modal de Configuración */}
       <div
         className={`fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 ${showSettings ? "block" : "hidden"}`}
       >
-        <div className="bg-dark-850 border border-dark-700 w-full max-w-sm rounded-2xl p-6 text-center transform scale-95 opacity-0 transition-all duration-300 ${showSettings ? "transform-scale-100 opacity-100" : ""}`>
+        <div className={`bg-dark-850 border border-dark-700 w-full max-w-sm rounded-2xl p-6 text-center transform scale-95 opacity-0 transition-all duration-300 ${showSettings ? "transform-scale-100 opacity-100" : ""}`}>
           <h3 className="text-base font-bold text-slate-100 mb-4">Configuración</h3>
           
           <div className="space-y-4">
@@ -370,7 +379,6 @@ export function App() {
           </div>
         </div>
       </div>
-    </div>
     </div>
   );
 }

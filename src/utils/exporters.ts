@@ -398,8 +398,8 @@ async function writeTempFile(content: string, suffix: string): Promise<string> {
  * Ejecuta un comando del sistema.
  */
 async function execCommand(command: string): Promise<{ success: boolean; stdout?: string; stderr?: string }> {
+  const { exec } = await import("child_process");
   return new Promise((resolve) => {
-    const { exec } = await import("child_process");
     exec(command, (error, stdout, stderr) => {
       if (error) {
         resolve({ success: false, stdout: stdout as string, stderr: stderr as string });
@@ -414,8 +414,8 @@ async function execCommand(command: string): Promise<{ success: boolean; stdout?
  * Lee un archivo y retorna su contenido.
  */
 async function readFile(path: string, encoding: string): Promise<Blob> {
+  const { readFile } = await import("fs");
   return new Promise((resolve) => {
-    const { readFile } = await import("fs");
     readFile(path, encoding, (err, data) => {
       if (err) throw err;
       resolve(new Blob([data], { type: "application/pdf" }));
@@ -427,8 +427,8 @@ async function readFile(path: string, encoding: string): Promise<Blob> {
  * Elimina un archivo temporal.
  */
 async function deleteFile(path: string): Promise<void> {
+  const { unlink } = await import("fs");
   return new Promise((resolve) => {
-    const { unlink } = await import("fs");
     unlink(path, (err) => {
       if (err) throw err;
       resolve();
@@ -441,6 +441,101 @@ async function deleteFile(path: string): Promise<void> {
  */
 function sanitizeFilename(name: string): string {
   return name.replace(/[^a-zA-Z0-9_\-]/g, "_").substring(0, 30) || "evaluacion";
+}
+
+/**
+ * Escapa caracteres especiales de LaTeX para evitar errores de compilación.
+ */
+function escapeLatex(text: string): string {
+  if (!text) return "";
+  return text
+    .replace(/\\/g, "\\textbackslash ")
+    .replace(/%/g, "\\%")
+    .replace(/&/g, "\\&")
+    .replace(/#/g, "\\#")
+    .replace(/_/g, "\\_")
+    .replace(/{/g, "\\{")
+    .replace(/}/g, "\\}")
+    .replace(/~/g, "\\textasciitilde ")
+    .replace(/\^/g, "\\textasciicircum ")
+    .replace(/\$/g, "\\$");
+}
+
+/**
+ * Convierte el cuerpo de una pregunta (Markdown + LaTeX) a formato LaTeX plano.
+ * Versión básica: elimina marcadores de Markdown y deja las fórmulas $$...$$ y $...$.
+ */
+function formatLatexBody(text: string): string {
+  if (!text) return "";
+  return text
+    .replace(/\$\$([\s\S]+?)\$\$/g, "\\[\n$1\n\\]")
+    .replace(/(?<!\\)\$([^\$\n]+?)\$/g, "($1)")
+    .replace(/\n\n/g, "\n\\par\n")
+    .replace(/\n/g, "\n");
+}
+
+/**
+ * Exportación a Word (.docx) usando la librería docx.
+ * Genera un documento simple con el encabezado y las preguntas del examen.
+ */
+export async function exportToWord(
+  quiz: Quiz,
+  mode: "exam" | "solutions" = "exam"
+): Promise<void> {
+  const { Document, Packer, Paragraph, TextRun } = await import("docx");
+
+  const doc = new Document({
+    sections: [
+      {
+        properties: {},
+        children: [
+          new Paragraph({
+            children: [new TextRun({ text: quiz.header.institution, bold: true, size: 28 })],
+          }),
+          new Paragraph({
+            children: [new TextRun({ text: quiz.header.title, bold: true, size: 24 })],
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `${quiz.header.course} • Docente: ${quiz.header.teacher} • Fecha: ${quiz.header.date}`,
+                size: 20,
+              }),
+            ],
+          }),
+          ...quiz.items.flatMap((item, index) => [
+            new Paragraph({
+              children: [new TextRun({ text: `${index + 1}. ${item.question.prompt}`, size: 20 })],
+            }),
+            item.question.type === "multiple_choice"
+              ? new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: item.question.options
+                        .map((o, i) => `  ${["A","B","C","D"][i]}) ${o.text}`)
+                        .join("\n"),
+                      size: 18,
+                    }),
+                  ],
+                })
+              : new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: `  [Respuesta abierta - espacio: ${item.question.openResponseHeight || 3.5} cm]`,
+                      size: 18,
+                      italics: true,
+                    }),
+                  ],
+                }),
+          ]),
+        ],
+      },
+    ],
+  });
+
+  const blob = await Packer.toBlob(doc);
+  const filename = `${sanitizeFilename(quiz.header.title)}_${mode === "solutions" ? "Solucionario" : "Examen"}.docx`;
+  saveAs(blob, filename);
 }
 
 /**
